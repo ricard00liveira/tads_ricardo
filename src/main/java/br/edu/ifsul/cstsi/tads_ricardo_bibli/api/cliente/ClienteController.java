@@ -29,13 +29,23 @@ public class ClienteController {
 
     @GetMapping("{codigo}")
     @Secured({"ROLE_ADMIN", "ROLE_USER"})
-    public ResponseEntity<Cliente> getClienteById(@PathVariable("codigo") Long codigo) {
+    public ResponseEntity<?> getClienteById(@PathVariable("codigo") Long codigo) {
         var cliente = clienteRepository.findById(codigo);
-        return cliente.isEmpty() ? ResponseEntity.notFound().build() : ResponseEntity.ok().body(cliente.get());
+
+        if (cliente.isEmpty()) {
+            return ResponseEntity
+                    .status(404)
+                    .body("Cliente com código " + codigo + " não encontrado.");
+        }
+
+        return ResponseEntity.ok(cliente.get());
     }
 
+
     @GetMapping("nome/{nome}")
-    public String getClienteByNome(@PathVariable("nome") String nome) {
-        return "Cliente com nome: " + nome;
+    public ResponseEntity<List<ClienteDto>> getClientesByNome(@PathVariable("nome") String nome) {
+        var clientes = clienteRepository.findByNomeContainingIgnoreCase(nome);
+        var dtos = clientes.stream().map(ClienteDto::new).toList();
+        return ResponseEntity.ok(dtos);
     }
 }
