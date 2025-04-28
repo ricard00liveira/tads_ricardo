@@ -1,4 +1,6 @@
-package br.edu.ifsul.cstsi.tads_ricardo_bibli;
+package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.emprestimo;
+import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.exemplar.Exemplar;
+import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.cliente.Cliente;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;

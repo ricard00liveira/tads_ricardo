@@ -1,5 +1,4 @@
-package br.edu.ifsul.cstsi.tads_ricardo_bibli;
-
+package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.exemplar;
 import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
@@ -8,15 +7,12 @@ import lombok.Setter;
 @Setter
 @Entity
 @Inheritance(strategy = InheritanceType.JOINED)
-@DiscriminatorColumn(name = "tipo_cliente")
-public abstract class Cliente {
+@DiscriminatorColumn(name = "tipo_exemplar")
+public abstract class Exemplar {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long codigo;
 
     private String nome;
-    private Integer idade;
-    private Integer telefone;
-    private String endereco;
 }
