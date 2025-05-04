@@ -1,6 +1,7 @@
 package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.autenticacao;
 
 
+import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,5 +25,15 @@ public class AutenticacaoController {
         var authenticationDTO = new UsernamePasswordAuthenticationToken(data.usuario(), data.senha());
         var authentication = manager.authenticate(authenticationDTO);
         return ResponseEntity.ok("Autenticou");
+    }
+
+    @RestController
+    @RequestMapping("/api/v1")
+    public class LogoutController {
+        @PostMapping("/logout")
+        public ResponseEntity<String> logout(HttpServletRequest request) {
+            request.getSession().invalidate(); // Invalida a sessão
+            return ResponseEntity.ok("Logout efetuado com sucesso.");
+        }
     }
 }

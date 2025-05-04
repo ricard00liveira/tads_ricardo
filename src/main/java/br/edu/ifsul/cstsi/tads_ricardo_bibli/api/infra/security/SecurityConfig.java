@@ -40,6 +40,7 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable()) //desabilita a proteção contra ataques Cross-site Request Forger
                 .authorizeHttpRequests(authorize -> {
                     authorize.requestMatchers(HttpMethod.POST, "/api/v1/login").permitAll(); //exceto, a rota de login
+                    authorize.requestMatchers(HttpMethod.POST, "/api/v1/logout").permitAll();
                     authorize.anyRequest().authenticated(); //demais rotas devem ser autenticadas
                 })
                 .httpBasic(Customizer.withDefaults());
