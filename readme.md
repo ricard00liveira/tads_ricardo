@@ -1,45 +1,120 @@
-# 📚 Sistema de Biblioteca - TADS Ricardo
+# 📚 Sistema de Gerenciamento de Biblioteca – TADS Ricardo
 
-Este é um sistema de gerenciamento de biblioteca desenvolvido para fins acadêmicos. O projeto utiliza **Java 17** com **Spring Boot**, **JPA/Hibernate** e **banco de dados MariaDB**, seguindo o padrão MVC e utilizando herança nas entidades.
-
----
-
-## 🚀 Tecnologias Utilizadas
-
-- Java 17
-- Spring Boot 3.2+
-- Spring Data JPA
-- Spring Security
-- Spring Web
-- MariaDB
-- Lombok
-- Maven
+Este sistema foi desenvolvido como projeto acadêmico para o curso de Tecnologia em Desenvolvimento de Sistemas para Internet/IFSul Campus Pelotas. Ele permite o controle de empréstimos de materiais como livros, periódicos e artigos científicos, com autenticação de usuários e interface RESTful.
 
 ---
 
-## 🏗️ Estrutura de Entidades
+## 🚀 Tecnologias e Frameworks
 
-### 🧍 Cliente (abstract)
+- **Java 17**
+- **Spring Boot 3.4.4**
+- **Spring Data JPA**
+- **Spring Security**
+- **Spring Web + Spring Data REST**
+- **JWT (Java Web Token)** – `com.auth0:java-jwt`
+- **Lombok**
+- **MariaDB**
+- **Maven**
+
+---
+
+## 🧩 Principais Entidades
+
+### 👤 Cliente (classe abstrata)
 - Subclasses:
-    - `Aluno`
-    - `PaiDeAluno`
+  - `Aluno`
+  - `PaiDeAluno`
+- Controladores, DTOs e serviços específicos para cadastro, atualização (PATCH/PUT) e listagem.
 
-### 📚 Exemplar (abstract)
+### 📘 Exemplar (classe abstrata)
 - Subclasses:
-    - `Livro`
-    - `Artigo`
-    - `Periodico`
+  - `Livro`
+  - `Artigo`
+  - `Periódico`
+- Representam os materiais disponíveis na biblioteca.
 
-### 🔁 Emprestimo
-- Relaciona Cliente + Exemplar
-- Possui `dataEmprestimo` e `dataDevolucao`
+### 🔄 Empréstimo
+- Relaciona `Cliente` e `Exemplar`
+- Campos como `dataEmprestimo` e `dataDevolucao` gerenciam os prazos de devolução.
+
+### 🔐 Autenticação
+- Implementada via **JWT**
+- Classes dedicadas: `AutenticacaoController`, `AutenticacaoService`, `UsuarioAutenticacaoDTO`
 
 ---
 
-## 🛠️ Configurações (application.properties)
+## 📦 Estrutura de Pacotes
+
+```
+tads_ricardo_bibli/
+├── api/
+│   ├── aluno/
+│   ├── artigo/
+│   ├── autenticacao/
+│   ├── cliente/
+│   ├── emprestimo/
+│   ├── exemplar/
+│   ├── infra/exception/
+│   └── periodico/
+└── TadsRicardoBibliApplication.java
+```
+
+---
+
+## ⚙️ Configuração
+
+### application.properties
 
 ```properties
 spring.datasource.url=jdbc:mariadb://localhost:3306/biblioteca
 spring.jpa.hibernate.ddl-auto=update
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.MariaDBDialect
-spring.data.rest.basePath=/api
+spring.jpa.show-sql=true
+```
+
+> Altere `username` e `password` conforme suas configurações locais do MariaDB.
+
+---
+
+## ▶️ Como Executar
+
+1. Clone o repositório:
+
+```bash
+git clone https://github.com/ricard00liveira/tads_ricardo.git
+cd tads_ricardo/tads_ricardo_bibli
+```
+
+2. Configure o banco de dados MariaDB e atualize o `application.properties`.
+
+3. Execute com Maven:
+
+```bash
+./mvnw spring-boot:run
+```
+
+---
+
+## 🧪 Testes
+
+- A aplicação possui dependência de testes com `spring-boot-starter-test`.
+- Para rodar testes:
+
+```bash
+./mvnw test
+```
+
+---
+
+## 📄 Licença
+
+Este projeto está sob a licença MIT. Consulte o arquivo `LICENSE` para mais detalhes.
+
+---
+
+## 🤝 Contribuições
+
+Contribuições, sugestões e melhorias são bem-vindas. Abra uma issue ou envie um pull request!
+
+---
+
+Desenvolvido por Ricardo Oliveira – [GitHub](https://github.com/ricard00liveira)
