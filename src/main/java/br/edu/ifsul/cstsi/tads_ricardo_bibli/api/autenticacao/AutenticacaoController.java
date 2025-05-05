@@ -1,7 +1,8 @@
 package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.autenticacao;
 
-
-import jakarta.servlet.http.HttpServletRequest;
+import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.infra.security.TokenJwtDTO;
+import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.infra.security.TokenService;
+import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.usuario.Usuario;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -14,26 +15,20 @@ import org.springframework.web.bind.annotation.RestController;
 @RequestMapping
 public class AutenticacaoController {
 
-    private AuthenticationManager manager;
+    private final AuthenticationManager manager;
+    private final TokenService tokenService;
 
-    public AutenticacaoController(AuthenticationManager manager) {
+    public AutenticacaoController(AuthenticationManager manager, TokenService tokenService) {
         this.manager = manager;
+        this.tokenService = tokenService;
     }
 
     @PostMapping("api/v1/login")
-    public ResponseEntity<String> efetuarLogin(@RequestBody UsuarioAutenticacaoDTO data){
-        var authenticationDTO = new UsernamePasswordAuthenticationToken(data.usuario(), data.senha());
+    public ResponseEntity<TokenJwtDTO> efetuarLogin(@RequestBody UsuarioAutenticacaoDTO data){
+        var authenticationDTO = new UsernamePasswordAuthenticationToken(data.email(), data.senha());
         var authentication = manager.authenticate(authenticationDTO);
-        return ResponseEntity.ok("Autenticou");
+        var tokenJWT = tokenService.geraToken((Usuario) authentication.getPrincipal()); //gera o token JWT para enviar na response
+        return ResponseEntity.ok(new TokenJwtDTO(tokenJWT)); //envia a response com o token JWT
     }
 
-    @RestController
-    @RequestMapping("/api/v1")
-    public class LogoutController {
-        @PostMapping("/logout")
-        public ResponseEntity<String> logout(HttpServletRequest request) {
-            request.getSession().invalidate(); // Invalida a sessão
-            return ResponseEntity.ok("Logout efetuado com sucesso.");
-        }
-    }
 }
