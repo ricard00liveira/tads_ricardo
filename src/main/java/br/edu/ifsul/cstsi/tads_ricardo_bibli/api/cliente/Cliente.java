@@ -21,7 +21,7 @@ public abstract class Cliente {
 
     private String nome;
     private Integer idade;
-    private Integer telefone;
+    private String telefone;
     private String endereco;
 
 }

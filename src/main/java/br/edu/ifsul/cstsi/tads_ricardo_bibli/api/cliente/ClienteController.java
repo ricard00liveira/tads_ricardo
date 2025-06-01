@@ -2,6 +2,7 @@ package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.cliente;
 
 import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.aluno.Aluno;
 import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.paidealuno.PaiDeAluno;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.annotation.Secured;
@@ -69,7 +70,7 @@ public class ClienteController {
     @PatchMapping("/{codigo}")
     public ResponseEntity<ClienteDto> updateParcial(
             @PathVariable Long codigo,
-            @RequestBody ClientePatchDto dto
+            @RequestBody @Valid ClientePatchDto dto
     ) {
         return clienteRepository.findById(codigo).map(cliente -> {
             if (dto.nome() != null) cliente.setNome(dto.nome());
@@ -84,7 +85,7 @@ public class ClienteController {
 
     // POST
     @PostMapping
-    public ResponseEntity<ClienteDto> create(@RequestBody ClientePostDto dto) {
+    public ResponseEntity<ClienteDto> create(@Valid @RequestBody ClientePostDto dto) {
         Cliente novoCliente;
         if ("ALUNO".equalsIgnoreCase(dto.tipo())) {
             novoCliente = new Aluno();
@@ -102,6 +103,7 @@ public class ClienteController {
         var saved = clienteRepository.save(novoCliente);
         return ResponseEntity.status(HttpStatus.CREATED).body(new ClienteDto(saved));
     }
+
 
     // DELETE
     @DeleteMapping("/{codigo}")

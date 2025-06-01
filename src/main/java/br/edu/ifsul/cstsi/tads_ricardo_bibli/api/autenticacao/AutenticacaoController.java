@@ -3,6 +3,7 @@ package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.autenticacao;
 import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.infra.security.TokenJwtDTO;
 import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.infra.security.TokenService;
 import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.usuario.Usuario;
+import jakarta.validation.Valid;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -24,7 +25,7 @@ public class AutenticacaoController {
     }
 
     @PostMapping("api/v1/login")
-    public ResponseEntity<TokenJwtDTO> efetuarLogin(@RequestBody UsuarioAutenticacaoDTO data){
+    public ResponseEntity<TokenJwtDTO> efetuarLogin(@RequestBody @Valid UsuarioAutenticacaoDTO data){
         var authenticationDTO = new UsernamePasswordAuthenticationToken(data.email(), data.senha());
         var authentication = manager.authenticate(authenticationDTO);
         var tokenJWT = tokenService.geraToken((Usuario) authentication.getPrincipal()); //gera o token JWT para enviar na response
