@@ -61,7 +61,7 @@ public class EmprestimoControllerTest {
         aluno.setEndereco("Test Address");
         testCliente = clienteRepository.save(aluno);
 
-        // Create a test exemplar (using Livro as concrete implementation)
+        // Create a test exemplar (using Livro as a concrete implementation)
         Livro livro = new Livro();
         livro.setNome("Test Exemplar");
         livro.setAutor("Test Author");
