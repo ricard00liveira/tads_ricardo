@@ -2,6 +2,7 @@ package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.infra.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -34,7 +35,12 @@ public class GlobalExceptionHandler {
 
     @ExceptionHandler(TokenInvalidoException.class)
     public ResponseEntity<String> handleTokenInvalidoException(TokenInvalidoException ex) {
-        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(ex.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(ex.getMessage());
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public ResponseEntity<String> handleBadCredentialsException(BadCredentialsException ex) {
+        return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Credenciais inválidas");
     }
 
     @ExceptionHandler(ResponseStatusException.class)

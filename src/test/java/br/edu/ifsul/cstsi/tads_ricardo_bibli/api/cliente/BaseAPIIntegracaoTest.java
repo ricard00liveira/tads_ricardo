@@ -68,6 +68,13 @@ public abstract class BaseAPIIntegracaoTest {
         return rest.exchange(url, PUT, new HttpEntity<>(body, headers), responseType);
     }
 
+    //Método genérico para requisições com o verbo PATCH
+    protected <T> ResponseEntity<T> patch(String url, Object body, Class<T> responseType) {
+        HttpHeaders headers = getHeaders();
+
+        return rest.exchange(url, PATCH, new HttpEntity<>(body, headers), responseType);
+    }
+
     //Método genérico para requisições com o verbo GET
     protected <T> ResponseEntity<T> get(String url, Class<T> responseType) {
 

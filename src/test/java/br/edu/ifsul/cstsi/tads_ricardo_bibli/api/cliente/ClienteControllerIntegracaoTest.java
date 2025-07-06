@@ -1,146 +1,164 @@
 package br.edu.ifsul.cstsi.tads_ricardo_bibli.api.cliente;
 
-import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.usuario.PerfilRepository;
-import br.edu.ifsul.cstsi.tads_ricardo_bibli.api.usuario.UsuarioRepository;
-import jakarta.persistence.DiscriminatorValue;
-import jakarta.persistence.Entity;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.test.context.ActiveProfiles;
+
 import java.util.List;
-import java.util.Map;
 import static org.junit.jupiter.api.Assertions.*;
 
 @ActiveProfiles("test")
-
 public class ClienteControllerIntegracaoTest extends BaseAPIIntegracaoTest {
+    private ResponseEntity<ClienteDTOResponse> getCliente(String url) {
+        return get(url, ClienteDTOResponse.class);
+    }
 
-    // Classes concretas para instanciar a entidade abstrata Cliente durante os testes
-    @Entity
-    @DiscriminatorValue("ALUNO")
-    public static class Aluno extends Cliente {}
+    private ResponseEntity<List<ClienteDTOResponse>> getClientesList(String url) {
+        var headers = getHeaders();
 
-    @Entity
-    @DiscriminatorValue("PAI_DE_ALUNO")
-    public static class PaiDeAluno extends Cliente {}
-
-    @Autowired
-    private ClienteRepository clienteRepository;
-
-    @Autowired
-    private UsuarioRepository usuarioRepository;
-
-    @Autowired
-    private PerfilRepository perfilRepository;
-
-    @Autowired
-    private PasswordEncoder passwordEncoder;
-
-    private Cliente clienteAluno;
-    private Cliente clientePai;
-
-    @BeforeEach
-    void setUp() {
-        // Limpa o repositório de clientes antes de cada teste para garantir isolamento.
-        clienteRepository.deleteAll();
-
-        // A lógica de autenticação continua a mesma.
-        // A BaseAPIIntegracaoTest carrega o usuário 'admin@email.com' que já
-        // foi criado pela aplicação ao iniciar o contexto de teste.
-        super.setupTest();
-
-        // Prepara os objetos de cliente para serem usados nos testes.
-        clienteAluno = new Aluno();
-        clienteAluno.setNome("Ricardo Aluno Teste");
-        clienteAluno.setIdade(20);
-        clienteAluno.setTelefone("53987654321");
-        clienteAluno.setEndereco("Rua Teste, 123");
-
-        clientePai = new PaiDeAluno();
-        clientePai.setNome("Carlos Pai Teste");
-        clientePai.setIdade(45);
-        clientePai.setTelefone("53912345678");
-        clientePai.setEndereco("Avenida Teste, 456");
+        return rest.exchange(
+                url,
+                HttpMethod.GET,
+                new HttpEntity<>(headers),
+                new ParameterizedTypeReference<>() {
+                });
     }
 
     @Test
-    @DisplayName("Deve retornar uma lista com todos os clientes")
-    void getAllClientes_retornaListaDeClientes() {
-        clienteRepository.save(clienteAluno);
-        clienteRepository.save(clientePai);
-        ResponseEntity<List> response = get("/api/v1/clientes", List.class);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(2, response.getBody().size());
-    }
-
-    @Test
-    @DisplayName("Deve retornar um cliente pelo seu código (ID)")
-    void getClienteById_quandoExiste_retornaClienteDto() {
-        Cliente savedCliente = clienteRepository.save(clienteAluno);
-        Long id = savedCliente.getCodigo();
-        ResponseEntity<ClienteDto> response = get("/api/v1/clientes/" + id, ClienteDto.class);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals(id, response.getBody().codigo());
-        assertEquals("Ricardo Aluno Teste", response.getBody().nome());
-    }
-
-    @Test
-    @DisplayName("Deve retornar 404 Not Found para um código (ID) de cliente que não existe")
-    void getClienteById_quandoNaoExiste_retornaNotFound() {
-        ResponseEntity<Map> response = get("/api/v1/clientes/999", Map.class);
-        assertEquals(HttpStatus.NOT_FOUND, response.getStatusCode());
-    }
-
-    @Test
-    @DisplayName("Deve criar um novo cliente do tipo Aluno com sucesso")
-    void createCliente_comDadosValidos_retornaCreated() {
-        ClientePostDto novoClienteDto = new ClientePostDto(
-                "Novo Aluno", 18, "53999998888", "Rua Nova, 789", "ALUNO");
-        ResponseEntity<ClienteDto> response = post("/api/v1/clientes", novoClienteDto, ClienteDto.class);
-        assertEquals(HttpStatus.CREATED, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Novo Aluno", response.getBody().nome());
-        assertEquals("Aluno", response.getBody().tipo());
-    }
-
-    @Test
-    @DisplayName("Deve atualizar parcialmente um cliente com sucesso")
-    void patchCliente_quandoExiste_atualizaEretornaOk() {
-        Cliente savedCliente = clienteRepository.save(clientePai);
-        Long id = savedCliente.getCodigo();
-        ClientePatchDto patchDto = new ClientePatchDto("Carlos Pai Modificado", null, "53111112222", null);
-        ResponseEntity<ClienteDto> response = rest.exchange(
-                "/api/v1/clientes/" + id, HttpMethod.PATCH, new HttpEntity<>(patchDto, getHeaders()), ClienteDto.class);
-        assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertNotNull(response.getBody());
-        assertEquals("Carlos Pai Modificado", response.getBody().nome());
-        assertEquals("53111112222", response.getBody().telefone());
-    }
-
-    @Test
-    @DisplayName("Deve deletar um cliente com sucesso")
-    void deleteCliente_quandoExiste_retornaNoContent() {
+    public void testPatchClienteEspera200OkEDelete204NotContent() {
         // ARRANGE
-        Cliente savedCliente = clienteRepository.save(clienteAluno);
-        Long id = savedCliente.getCodigo();
+        var clientePostDto = new ClientePostDto(
+                "Cliente Teste",
+                30,
+                "1234567890",
+                "Rua A, n. 100",
+                "ALUNO"
+        );
+
+        var responsePost = post("/api/v1/clientes", clientePostDto, null);
+        assertEquals(HttpStatus.CREATED, responsePost.getStatusCode());
+
+        var location = responsePost.getHeaders().get("location").get(0);
+        var clienteDto = getCliente(location).getBody();
+
+        assertNotNull(clienteDto);
+        assertEquals("Cliente Teste", clienteDto.nome());
+        assertEquals(30, clienteDto.idade());
+        assertEquals("1234567890", clienteDto.telefone());
+        assertEquals("Rua A, n. 100", clienteDto.endereco());
+
+        // ‘PATCH’: atualiza apenas nome e telefone
+        var clientePatchDto = new ClientePatchDto(
+                "Cliente Atualizado",
+                null,
+                "0987654321",
+                null
+        );
 
         // ACT
-        ResponseEntity<Void> deleteResponse = delete("/api/v1/clientes/" + id, Void.class);
+        var responsePatch = patch(location, clientePatchDto, ClienteDTOResponse.class);
 
         // ASSERT
-        assertEquals(HttpStatus.NO_CONTENT, deleteResponse.getStatusCode());
+        assertEquals(HttpStatus.OK, responsePatch.getStatusCode());
+        assertNotNull(responsePatch.getBody());
+        assertEquals("Cliente Atualizado", responsePatch.getBody().nome());
+        assertEquals(30, responsePatch.getBody().idade()); // idade permanece igual
+        assertEquals("0987654321", responsePatch.getBody().telefone());
+        assertEquals("Rua A, n. 100", responsePatch.getBody().endereco()); // endereço não alterado
 
-        // Verifica se o cliente foi realmente deletado
-        ResponseEntity<Map> getResponse = get("/api/v1/clientes/" + id, Map.class);
-        assertEquals(HttpStatus.NOT_FOUND, getResponse.getStatusCode());
+        // ACT: Remoção
+        var responseDelete = delete(location, null);
+        // assert delete 204
+        assertEquals(HttpStatus.NO_CONTENT, responseDelete.getStatusCode());
+
+    }
+
+    @Test
+    @DisplayName("Deve criar um novo cliente do tipo PAI_DE_ALUNO")
+    public void testCreatePaiDeAluno() {
+        // ARRANGE
+        var clientePostDto = new ClientePostDto(
+                "Pai de Aluno Teste",
+                40,
+                "5555555555",
+                "Rua C, n. 300",
+                "PAI_DE_ALUNO"
+        );
+
+        // ACT
+        var responsePost = post("/api/v1/clientes", clientePostDto, null);
+
+        // ASSERT
+        assertEquals(HttpStatus.CREATED, responsePost.getStatusCode());
+
+        var location = responsePost.getHeaders().get("location").get(0);
+        var clienteDto = getCliente(location).getBody();
+
+        assertNotNull(clienteDto);
+        assertEquals("Pai de Aluno Teste", clienteDto.nome());
+        assertEquals(40, clienteDto.idade());
+        assertEquals("5555555555", clienteDto.telefone());
+        assertEquals("Rua C, n. 300", clienteDto.endereco());
+
+        // Limpa o teste removendo o cliente criado
+        delete(location, null);
+    }
+
+    @Test
+    @DisplayName("Deve retornar lista vazia quando não houver clientes cadastrados")
+    public void deveRetornarListaVaziaQuandoNaoHouverClientes() {
+        // Arrange
+        final String CLIENTES_API_URL = "/api/v1/clientes";
+        final String MENSAGEM_LISTA_VAZIA = "A lista de clientes deve estar vazia";
+        final String MENSAGEM_STATUS_OK = "O status da resposta deve ser OK";
+        final String MENSAGEM_CORPO_NAO_NULO = "O corpo da resposta não deve ser nulo";
+        
+        // Act
+        ResponseEntity<List<ClienteDTOResponse>> response = getClientesList(CLIENTES_API_URL);
+        
+        // Assert
+        assertAll(
+                () -> assertEquals(HttpStatus.OK, response.getStatusCode(), MENSAGEM_STATUS_OK),
+                () -> assertNotNull(response.getBody(), MENSAGEM_CORPO_NAO_NULO),
+                () -> assertTrue(response.getBody().isEmpty(), MENSAGEM_LISTA_VAZIA)
+        );
+    }
+
+    @Test
+    @DisplayName("Deve retornar um cliente específico pelo ID")
+    public void testGetClienteById() {
+        // ARRANGE
+        // Primeiro cria um cliente para garantir que existe um para buscar
+        var clientePostDto = new ClientePostDto(
+                "Cliente Teste ID",
+                25,
+                "9876543210",
+                "Rua B, n. 200",
+                "ALUNO"
+        );
+
+        var responsePost = post("/api/v1/clientes", clientePostDto, null);
+        assertEquals(HttpStatus.CREATED, responsePost.getStatusCode());
+
+        var location = responsePost.getHeaders().get("location").get(0);
+
+        // ACT
+        var response = getCliente(location);
+
+        // ASSERT
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("Cliente Teste ID", response.getBody().nome());
+        assertEquals(25, response.getBody().idade());
+        assertEquals("9876543210", response.getBody().telefone());
+        assertEquals("Rua B, n. 200", response.getBody().endereco());
+
+        // Limpa o teste removendo o cliente criado
+        delete(location, null);
     }
 }

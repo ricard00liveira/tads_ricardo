@@ -9,6 +9,7 @@ import org.springframework.security.access.annotation.Secured;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
+import java.net.URI;
 import java.util.List;
 
 @RestController
@@ -34,18 +35,14 @@ public class ClienteController {
 
     @GetMapping("{codigo}")
     @Secured({"ROLE_ADMIN", "ROLE_USER"})
-    public ResponseEntity<?> getClienteById(@PathVariable("codigo") Long codigo) {
-        var cliente = clienteRepository.findById(codigo);
-
-        if (cliente.isEmpty()) {
-            return ResponseEntity
-                    .status(HttpStatus.NOT_FOUND)
-                    .body("Cliente com código " + codigo + " não encontrado.");
-        }
-
-        return ResponseEntity.ok(new ClienteDto(cliente.get()));
+    public ResponseEntity<ClienteDTOResponse> getClienteById(@PathVariable("codigo") Long codigo) {
+        return clienteRepository.findById(codigo)
+                .map(cliente -> ResponseEntity.ok(new ClienteDTOResponse(cliente)))
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND,
+                        "Cliente com código " + codigo + " não encontrado.")
+                );
     }
-
 
     @GetMapping("nome/{nome}")
     public ResponseEntity<List<ClienteDto>> getClientesByNome(@PathVariable("nome") String nome) {
@@ -68,7 +65,7 @@ public class ClienteController {
 
     // PATCH
     @PatchMapping("/{codigo}")
-    public ResponseEntity<ClienteDto> updateParcial(
+    public ResponseEntity<ClienteDTOResponse> updateParcial(
             @PathVariable Long codigo,
             @RequestBody @Valid ClientePatchDto dto
     ) {
@@ -78,7 +75,7 @@ public class ClienteController {
             if (dto.telefone() != null) cliente.setTelefone(dto.telefone());
             if (dto.endereco() != null) cliente.setEndereco(dto.endereco());
             clienteRepository.save(cliente);
-            return ResponseEntity.ok(new ClienteDto(cliente));
+            return ResponseEntity.ok(new ClienteDTOResponse(cliente));
         }).orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                 "Cliente com código " + codigo + " não encontrado."));
     }
@@ -101,7 +98,8 @@ public class ClienteController {
         novoCliente.setEndereco(dto.endereco());
 
         var saved = clienteRepository.save(novoCliente);
-        return ResponseEntity.status(HttpStatus.CREATED).body(new ClienteDto(saved));
+        URI location = URI.create("/api/v1/clientes/" + saved.getCodigo());
+        return ResponseEntity.created(location).body(new ClienteDto(saved));
     }
 
 
